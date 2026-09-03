@@ -20,6 +20,7 @@ const crypto = require('crypto');
 const verifyIdToken = (req, res, next) => {
     const token = req.cookies.token
     // console.log('cokies', cookiesToken);
+    // console.log(token);
     if (!token) {
         return res.status(401).send({ message: 'UnAuthorize Access' });
     }
@@ -28,7 +29,7 @@ const verifyIdToken = (req, res, next) => {
             return res.status(401).send({ message: 'UnAuthorize Access' });
         }
         // console.log('decoded',decoded)
-        res.token_email = decoded.email;
+        req.token_email = decoded.email;
 
         next();
     })
@@ -94,6 +95,8 @@ async function run() {
 
         // we will create api heree /
         const db = client.db('zaper');
+        const userCollection = db.collection('users');
+        const ridersCollection = db.collection('riders');
         const percelsCollection = db.collection('percels');
         const paymentCollection = db.collection('payments')
 
@@ -115,6 +118,85 @@ async function run() {
         res.send({success:true})
             
         })
+
+        // /user
+
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const email = user.email;
+            // const query = req.query.email
+            user.role = 'user';
+            user.createdAt = new Date();
+            const userExisting = await userCollection.findOne({email});
+            if (userExisting) {
+                return res.send({
+                    message: 'user already exist',
+                    user:userExisting
+                })
+            }
+            const result = await userCollection.insertOne(user);
+            res.send(result)
+        })
+
+
+        // riders /
+        app.post('/riders', async (req, res) => {
+            const rider = req.body;
+            rider.status = 'pending';
+            rider.createdAt = new Date();
+            const result = await ridersCollection.insertOne(rider);
+            res.send(result)
+        })
+
+        app.get('/riders', async (req, res) => {
+            const query = {};
+            if (req.query.status) {
+                query.status = req.query.status;
+            }
+            const cursor = ridersCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.patch('/riders/:id', async (req, res) => {
+            const status = req.body.status;
+            // console.log(status);
+            const id = req.params
+            // console.log(id);
+            const query ={_id: new ObjectId(id)}
+            const update = {
+                $set:{
+                    status:status
+                }
+            }
+
+            const result = await ridersCollection.updateOne(query, update);
+
+            if (status === 'Approved') {
+                const email = req.body.email;
+                // console.log('emaol',email)
+                const userQuery ={email}
+                const updateDoc = {
+                    $set: {
+                        role: 'rider'
+                    }
+                }
+                const userResult = await userCollection.updateOne(userQuery, updateDoc)
+            }
+            res.send(result)
+           
+        })
+
+        app.delete('/riders/:id', async (req, res) => {
+            const id = req.params
+            const query = { _id: new ObjectId(id) };
+            const result = await ridersCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
+
+
 
         app.get('/percels', async (req, res) => {
             const query = {}
@@ -290,13 +372,15 @@ async function run() {
         app.get('/payments', verifyIdToken, async (req, res) => {
            
             const { email } = req.query;
-            console.log("headers", req.headers);
+            // console.log("headers", req.headers);
+            // console.log(email)
            
             const query = {}
             if (email) {
                 query.customerEmail = email;
             }
-            if (email !== req.decoded_email) {
+            // console.log(email)
+            if (email !== req.token_email) {
                 return res.status(403).send({message:'Forbidden Access'})
             }
             const cursor = paymentCollection.find(query);
