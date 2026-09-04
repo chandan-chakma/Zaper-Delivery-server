@@ -146,7 +146,7 @@ async function run() {
         })
 
         // /user role update
-        app.patch('/users/:id', async (req, res) => {
+        app.patch('/users/:id/role', async (req, res) => {
             const id = req.params;
             const roleInfo = req.body;
             // console.log(roleInfo)
@@ -158,6 +158,18 @@ async function run() {
             }
             const result = await userCollection.updateOne(query, updateRole);
             res.send(result)
+        })
+
+
+        // get role for private route
+        app.get('/users/:email/role', async (req, res) => {
+            const email = req.params.email;
+            // console.log(email)
+            const query = { email }
+            // console.log(query)
+            const user = await userCollection.findOne(query);
+            // console.log(user.role)
+            res.send({role:user?.role || 'user'});
         })
 
 
