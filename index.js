@@ -119,7 +119,7 @@ async function run() {
             
         })
 
-        // /user
+       
 
         app.post('/users', async (req, res) => {
             const user = req.body;
@@ -135,6 +135,28 @@ async function run() {
                 })
             }
             const result = await userCollection.insertOne(user);
+            res.send(result)
+        })
+
+        app.get('/users', async (req, res) => {
+            // const user = req.body;
+            const cursor = userCollection.find()
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        // /user role update
+        app.patch('/users/:id', async (req, res) => {
+            const id = req.params;
+            const roleInfo = req.body;
+            // console.log(roleInfo)
+            const query = { _id: new ObjectId(id) };
+            const updateRole = {
+                $set: {
+                    role:roleInfo.role
+                }
+            }
+            const result = await userCollection.updateOne(query, updateRole);
             res.send(result)
         })
 
