@@ -46,7 +46,7 @@ const verifyIdToken = (req, res, next) => {
 //     credential: cert(serviceAccount),
 // });
 // const verfyToken = async (req, res, next) => {
-//     // console.log('headers', req.headers.authorization); 
+//     // console.log('headers', req.headers.authorization);
 //     const token = req.headers.authorization;
 //     console.log(token)
 //     if (!token) {
@@ -58,16 +58,19 @@ const verifyIdToken = (req, res, next) => {
 //         console.log(idToken)
 //         // const decoded = await getAuth().verifyIdToken(idToken);
 //         // console.log("decode",decoded)
-//         // console.log("decode", req.decoded_email)   
+//         // console.log("decode", req.decoded_email)
 //     }
 //     catch (err) {
 //         console.log(err);
 //         console.log("message",err.message);
-//         // return res.status(401).send({message:'unAuthorize Access'})        
+//         // return res.status(401).send({message:'unAuthorize Access'})
 //     }
 
-//     next();  
+//     next();
 // }
+
+
+
 
 const generateTrackingId = () => {
     const prefix = "PRCL";
@@ -99,6 +102,22 @@ async function run() {
         const ridersCollection = db.collection('riders');
         const percelsCollection = db.collection('percels');
         const paymentCollection = db.collection('payments')
+
+        // now make verfy admin route
+
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.token_email;
+            // console.log(email)
+            const query = { email }
+            const user = await userCollection.findOne(query);
+            if (!user || user.role !== 'admin') {
+                return res.status(403).send({ message: 'Forbidden Access' })
+            }
+
+            next()
+        }
+
+
 
 
         // create jwt or post jwt token 
@@ -140,13 +159,27 @@ async function run() {
 
         app.get('/users', async (req, res) => {
             // const user = req.body;
-            const cursor = userCollection.find()
+            const searchText = req.query.search;
+            const query = {}
+            if (searchText) {
+                // if multiple quersy suppos i can search by name or email we user or 
+                query.$or= [
+                    { displayName: { $regex: searchText, $options: 'i' } },
+                    { email: { $regex: searchText, $options:'i'}}
+                ]
+                // one query supoose some search only by name 
+                // query.displayName = {
+                //     $regex: searchText,
+                //     $options:'i'
+                // };
+            }
+            const cursor = userCollection.find(query)
             const result = await cursor.toArray();
             res.send(result);
         })
 
         // /user role update
-        app.patch('/users/:id/role', async (req, res) => {
+        app.patch('/users/:id/role', verifyIdToken, verifyAdmin, async (req, res) => {
             const id = req.params;
             const roleInfo = req.body;
             // console.log(roleInfo)
@@ -192,7 +225,7 @@ async function run() {
             res.send(result);
         })
 
-        app.patch('/riders/:id', async (req, res) => {
+        app.patch('/riders/:id',verifyIdToken, verifyAdmin, async (req, res) => {
             const status = req.body.status;
             // console.log(status);
             const id = req.params
