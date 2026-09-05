@@ -173,7 +173,7 @@ async function run() {
                 //     $options:'i'
                 // };
             }
-            const cursor = userCollection.find(query)
+            const cursor = userCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
         })
@@ -216,9 +216,18 @@ async function run() {
         })
 
         app.get('/riders', async (req, res) => {
+            const { status, district, workStatus } = req.query
+            console.log(req.query)
+            console.log('her', status, district, workStatus)
             const query = {};
-            if (req.query.status) {
-                query.status = req.query.status;
+            if (status) {
+                query.status = status;
+            }
+            if (district) {
+                query.riderDistrict=district
+            }
+            if (workStatus) {
+                query.workStatus = workStatus
             }
             const cursor = ridersCollection.find(query);
             const result = await cursor.toArray();
@@ -233,7 +242,8 @@ async function run() {
             const query ={_id: new ObjectId(id)}
             const update = {
                 $set:{
-                    status:status
+                    status: status,
+                    workStatus:'Available'
                 }
             }
 
@@ -267,11 +277,15 @@ async function run() {
 
         app.get('/percels', async (req, res) => {
             const query = {}
-            const { email } = req.query;
+            const { email,deliveryStatus } = req.query;
             // console.log(email)
             if (email) {
                 query.senderEmail = email;
             }
+            if (deliveryStatus) {
+                query.deliveryStatus=deliveryStatus
+            }
+            // console.log(query)
             const option ={sort:{createdAt:-1}}
             
             const cursor = percelsCollection.find(query,option);
@@ -400,6 +414,7 @@ async function run() {
                 const update = {
                     $set: {
                         paymentStatus: 'paid',
+                        deliveryStatus:'peniding',
                         trackingId: trackingId
                     }
                 }
