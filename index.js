@@ -301,6 +301,36 @@ async function run() {
             res.send(result)
         })
 
+        app.patch('/percels/:id', async (req, res) => {
+            const { riderId, riderEmail, riderName } = req.body;
+            const id = req.params;
+            const query = { _id: new ObjectId(id) };
+            const updatePercel = {
+                $set: {
+                    deliveryStatus: 'Rider_Assign',
+                    riderId: riderId,
+                    riderEmail: riderEmail,
+                    riderName: riderName
+
+
+                }
+            }
+            const result = await percelsCollection.updateOne(query, updatePercel);
+            
+            // and also update rider 
+            const riderQuery = { _id: new ObjectId(riderId) };
+            const updateRider = {
+                $set: {
+                    workStatus: 'in_delivery'
+                }
+                
+            }
+
+            const riderResult = await ridersCollection.updateOne(riderQuery, updateRider);
+            res.send(riderResult)
+
+        })
+
         app.delete('/percels/:id', async (req, res) => {
             const id = req.params;
             console.log(id);
