@@ -293,6 +293,21 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/percels/riders', async (req, res) => {
+            const { riderEmail,deliveryStatus } = req.query;
+            const query = { riderEmail };
+            if (riderEmail) {
+                query.riderEmail = riderEmail;
+            }
+            if (deliveryStatus) {
+                query.deliveryStatus = { $in: ['Rider_Assign','rider_arriving' ]}
+            }
+            const cursor = percelsCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+
+        })
+
         app.post('/percels', async (req, res) => {
             const percel = req.body;
             // console.log(percel)
@@ -311,8 +326,6 @@ async function run() {
                     riderId: riderId,
                     riderEmail: riderEmail,
                     riderName: riderName
-
-
                 }
             }
             const result = await percelsCollection.updateOne(query, updatePercel);
@@ -336,6 +349,18 @@ async function run() {
             console.log(id);
             const query = { _id: new ObjectId(id) }
             const result = await percelsCollection.deleteOne(query);
+            res.send(result)
+        })
+
+        app.patch('/percels/:id/status', async (req, res) => {
+            const { deliveryStatus } = req.body;
+            const query = ({ _id: new ObjectId(req.params.id) });
+            const updateDoc = {
+                $set: {
+                    deliveryStatus:deliveryStatus
+                }
+            }
+            const result = await percelsCollection.updateOne(query, updateDoc);
             res.send(result)
         })
         
