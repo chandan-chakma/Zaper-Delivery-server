@@ -101,7 +101,8 @@ async function run() {
         const userCollection = db.collection('users');
         const ridersCollection = db.collection('riders');
         const percelsCollection = db.collection('percels');
-        const paymentCollection = db.collection('payments')
+        const paymentCollection = db.collection('payments');
+        const trackingCollection = db.collection('tracking');
 
         // now make verfy admin route
 
@@ -115,6 +116,19 @@ async function run() {
             }
 
             next()
+        }
+
+        // tracking percel 
+        const logTracking = async(trackingId, status) => {
+            const log = {
+                trackingId,
+                status,
+                details: status.split('_').join(' '),
+                createAt: new Date()
+            }
+
+            const result = await trackingCollection.insertOne(log);
+            return result
         }
 
 
@@ -299,8 +313,12 @@ async function run() {
             if (riderEmail) {
                 query.riderEmail = riderEmail;
             }
-            if (deliveryStatus) {
-                query.deliveryStatus = { $in: ['Rider_Assign','rider_arriving' ]}
+            if (deliveryStatus !=='percel_delivered') {
+                // query.deliveryStatus = { $in: ['Rider_Assign','rider_arriving' ]}u
+                query.deliveryStatus={$nin:['percel_delivered']}
+            }
+            else {
+                query.deliveryStatus=deliveryStatus
             }
             const cursor = percelsCollection.find(query);
             const result = await cursor.toArray();
@@ -317,7 +335,7 @@ async function run() {
         })
 
         app.patch('/percels/:id', async (req, res) => {
-            const { riderId, riderEmail, riderName } = req.body;
+            const { riderId, riderEmail, riderName ,trackingId} = req.body;
             const id = req.params;
             const query = { _id: new ObjectId(id) };
             const updatePercel = {
@@ -325,7 +343,7 @@ async function run() {
                     deliveryStatus: 'Rider_Assign',
                     riderId: riderId,
                     riderEmail: riderEmail,
-                    riderName: riderName
+                    riderName: riderName,
                 }
             }
             const result = await percelsCollection.updateOne(query, updatePercel);
@@ -340,6 +358,7 @@ async function run() {
             }
 
             const riderResult = await ridersCollection.updateOne(riderQuery, updateRider);
+            logTracking(trackingId,'Rider_Assign')
             res.send(riderResult)
 
         })
@@ -353,14 +372,27 @@ async function run() {
         })
 
         app.patch('/percels/:id/status', async (req, res) => {
-            const { deliveryStatus } = req.body;
+            const { deliveryStatus,riderId,trackingId } = req.body;
             const query = ({ _id: new ObjectId(req.params.id) });
             const updateDoc = {
                 $set: {
                     deliveryStatus:deliveryStatus
                 }
             }
+            if (deliveryStatus === 'percel_delivered') {
+                const riderQuery = { _id: new ObjectId(riderId) };
+                const updateRider = {
+                    $set: {
+                        workStatus: 'Available'
+                    }
+
+                }
+
+                const riderResult = await ridersCollection.updateOne(riderQuery, updateRider);
+            }
+            
             const result = await percelsCollection.updateOne(query, updateDoc);
+            logTracking(trackingId, deliveryStatus)
             res.send(result)
         })
         
@@ -489,6 +521,7 @@ async function run() {
                 }
                 if (session.payment_status === 'paid') {
                     const resultPayment = await paymentCollection.insertOne(payment);
+                    logTracking(trackingId,' peniding')
                     return res.send({
                         success: true,
                         modifyPercel: result,
@@ -529,7 +562,18 @@ async function run() {
 
 
 
-
+        // tracking 
+        app.get('/percel-tracking/:trackingId/logs', async (req, res) => {
+            const trackingId = req.params.trackingId;
+            // console.log(trackingId)
+            const query = { trackingId };
+            // console.log(query)
+            const cursor = trackingCollection.find(query);
+            // console.log(cursor)
+            const result = await cursor.toArray();
+            // console.log(result)
+            res.send(result)
+        })
 
 
         // Send a ping to confirm a successful connection
