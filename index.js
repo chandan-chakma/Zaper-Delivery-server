@@ -15,6 +15,7 @@ app.use(cors({
 })) // for conneting server and client
 app.use(cookieParser());
 const crypto = require('crypto');
+const { data } = require('react-router');
 
 // custom verfy jwt token httponlyCookies
 const verifyIdToken = (req, res, next) => {
@@ -113,6 +114,17 @@ async function run() {
             const user = await userCollection.findOne(query);
             if (!user || user.role !== 'admin') {
                 return res.status(403).send({ message: 'Forbidden Access' })
+            }
+
+            next()
+        }
+
+        const verfyRider = async (req, res, next) => {
+            const email = req.token_email;
+            const query = { email }
+            const user = await userCollection.findOne(query);
+            if (!user || user.role !== 'rider') {
+                return res.status(403).send({message:'Forbidden Access'})
             }
 
             next()
@@ -248,6 +260,52 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/riders/delivery-per-day', async (req, res) => {
+            const email = req.query.email;
+            const pipeline = [
+                {
+                    $match: {
+                        riderEmail: email,
+                        deliveryStatus: "percel_delivered"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'tracking',
+                        localField: 'trackingId',
+                        foreignField: 'trackingId',
+                        as:'parcel_tracking'
+                    }
+                },
+                {
+                    $unwind:'$parcel_tracking'
+                },
+                {
+                    $match: {
+                        'parcel_tracking.status':'percel_delivered'
+                    }
+                },
+                {
+                    $addFields: {
+                        deliveryDay: {
+                            $dateToString: {
+                                format: "%Y-%m-%d",
+                                date: "$parcel_tracking.createAt"
+                            }
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$deliveryDay",
+                        deveredCount:{$sum:1}
+                    }
+                }
+            ]
+            const result = await percelsCollection.aggregate(pipeline).toArray()
+            res.send(result)
+        })
+
         app.patch('/riders/:id',verifyIdToken, verifyAdmin, async (req, res) => {
             const status = req.body.status;
             // console.log(status);
@@ -325,6 +383,32 @@ async function run() {
             res.send(result);
 
         })
+
+        // aggregaton pipeline mongodb 
+        app.get('/percels/delivery-status/stat', async (req, res) => {
+            const pipeline = [
+                {
+                    $group: {
+                        _id: '$deliveryStatus',
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $project: {
+                        status: '$_id',
+                        count: 1,
+                        // _id:0
+                        
+
+                    }
+                }
+            ]
+            const result = await percelsCollection.aggregate(pipeline).toArray();
+            res.send(result)
+            
+        })
+
+
 
         app.post('/percels', async (req, res) => {
             const percel = req.body;
@@ -577,8 +661,8 @@ async function run() {
 
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
     
