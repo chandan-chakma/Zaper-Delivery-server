@@ -7,12 +7,30 @@ const cookieParser = require('cookie-parser'); // import cookies-parser
 const port = process.env.PORT || 3000;
 const jwt = require('jsonwebtoken');
 const app = express()
+
+// CORS configuration - allow multiple origins
+const corsOptions = {
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'http://localhost:3001',
+            process.env.SITE_DOMAIN,
+            'https://eloquent-rolypoly-1fb53a.netlify.app'
+        ];
+        
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+};
+
 //middleware
 app.use(express.json());
-app.use(cors({
-    origin: process.env.SITE_DOMAIN,
-    credentials:true
-})) // for conneting server and client
+app.use(cors(corsOptions)) // for conneting server and client
 app.use(cookieParser());
 const crypto = require('crypto');
 
@@ -96,10 +114,17 @@ const client = new MongoClient(uri, {
 });
 
 let isConnected = false;
+let userCollection, ridersCollection, percelsCollection, paymentCollection, trackingCollection;
 
 async function connectDB() {
     if (!isConnected) {
         await client.connect();
+        const db = client.db('zaper');
+        userCollection = db.collection('users');
+        ridersCollection = db.collection('riders');
+        percelsCollection = db.collection('percels');
+        paymentCollection = db.collection('payments');
+        trackingCollection = db.collection('tracking');
         isConnected = true;
         console.log("✅ Database connected");
     }
@@ -120,15 +145,8 @@ async function run() {
     try {
         await connectDB();
 
-        // we will create api heree /
-        const db = client.db('zaper');
-        const userCollection = db.collection('users');
-        const ridersCollection = db.collection('riders');
-        const percelsCollection = db.collection('percels');
-        const paymentCollection = db.collection('payments');
-        const trackingCollection = db.collection('tracking');
-
-        // now make verfy admin route
+        // Collections are now globally available from connectDB()
+        // Define helper functions here
 
         const verifyAdmin = async (req, res, next) => {
             const email = req.token_email;
