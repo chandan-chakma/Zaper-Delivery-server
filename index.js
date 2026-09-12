@@ -6,10 +6,7 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser'); // import cookies-parser
 const port = process.env.PORT || 3000;
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-
 const app = express()
-
 //middleware
 app.use(express.json());
 app.use(cors({
@@ -17,6 +14,7 @@ app.use(cors({
     credentials:true
 })) // for conneting server and client
 app.use(cookieParser());
+const crypto = require('crypto');
 
 
 // custom verfy jwt token httponlyCookies
@@ -97,34 +95,38 @@ const client = new MongoClient(uri, {
     }
 });
 
-// Global variables for collections
-let userCollection, ridersCollection, percelsCollection, paymentCollection, trackingCollection;
+let isConnected = false;
 
-async function initializeDatabase() {
-    try {
-        if (!userCollection) {
-            await client.connect();
-            const db = client.db('zaper');
-            userCollection = db.collection('users');
-            ridersCollection = db.collection('riders');
-            percelsCollection = db.collection('percels');
-            paymentCollection = db.collection('payments');
-            trackingCollection = db.collection('tracking');
-            console.log("✅ Database connected successfully");
-        }
-    } catch (error) {
-        console.error("❌ Database connection error:", error);
-        throw error;
+async function connectDB() {
+    if (!isConnected) {
+        await client.connect();
+        isConnected = true;
+        console.log("✅ Database connected");
     }
 }
 
+// Middleware to ensure DB is connected
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        console.error("❌ DB connection error:", error);
+        res.status(500).send({ error: 'Database connection failed' });
+    }
+});
+
 async function run() {
     try {
-        // Initialize database connection
-        await initializeDatabase();
+        await connectDB();
 
-        // we will create api here
-        // Database collections are now globally available from initializeDatabase()
+        // we will create api heree /
+        const db = client.db('zaper');
+        const userCollection = db.collection('users');
+        const ridersCollection = db.collection('riders');
+        const percelsCollection = db.collection('percels');
+        const paymentCollection = db.collection('payments');
+        const trackingCollection = db.collection('tracking');
 
         // now make verfy admin route
 
@@ -175,12 +177,12 @@ async function run() {
                 process.env.JWT_SECRET,
                 {expiresIn:'1h'}
             )
-            const isProduction = process.env.NODE_ENV === 'production';
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: isProduction,
-                sameSite: isProduction ? 'none' : 'lax'
+                secure: false,
+                sameSite:'lax'
             })
+        // console.log(token)
         res.send({success:true})
             
         })
@@ -689,14 +691,17 @@ async function run() {
     
     }
 }
-run().catch(console.dir);
-
+run().catch(console.error);
 
 app.get('/', (req, res) => {
-    // console.log("hello zaper delivery");
-    res.send('hello from zaper')
+    res.send('✅ Zaper Server is running!')
 });
 
-app.listen(port, () => {
-    console.log(`here is our zaper port ${port}`)
-})
+// Only listen if not in production (Vercel handles this)
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`here is our zaper port ${port}`)
+    });
+}
+
+module.exports = app;

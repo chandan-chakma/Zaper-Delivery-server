@@ -19,5 +19,8 @@
                 "OPTIONS"
             ]
         }
-    ]
+    ],
+    "env": {
+        "NODE_ENV": "production"
+    }
 }
