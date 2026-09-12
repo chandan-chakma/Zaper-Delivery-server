@@ -1,0 +1,62 @@
+[debug] [2026-09-08T03:34:06.252Z] ----------------------------------------------------------------------
+[debug] [2026-09-08T03:34:06.263Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Chakma\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js login
+[debug] [2026-09-08T03:34:06.263Z] CLI Version:   15.27.0
+[debug] [2026-09-08T03:34:06.263Z] Platform:      win32
+[debug] [2026-09-08T03:34:06.263Z] Node Version:  v24.19.0
+[debug] [2026-09-08T03:34:06.263Z] Detected Agent: unknown
+[debug] [2026-09-08T03:34:06.263Z] Time:          Tue Sep 08 2026 11:34:06 GMT+0800 (China Standard Time)
+[debug] [2026-09-08T03:34:06.264Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-09-08T03:34:06.290Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[info] i  The Firebase CLI’s MCP server feature can optionally make use of Gemini in Firebase. Learn more about Gemini in Firebase and how it uses your data: https://firebase.google.com/docs/gemini-in-firebase#how-gemini-in-firebase-uses-your-data 
+[debug] [2026-09-08T03:34:17.005Z] *** [apiv2] error from fetch(https://firebase-public.firebaseio.com/cli.json, {"headers":{},"method":"GET"}): ConnectTimeoutError: Connect Timeout Error (attempted addresses: 35.201.97.85:443, 34.120.160.131:443, 35.190.39.113:443, timeout: 10000ms)
+[warn] !  Unable to fetch the CLI MOTD and remote config. This is not a fatal error, but may indicate an issue with your network connection. 
+[debug] [2026-09-08T03:34:17.005Z] Failed to fetch MOTD FirebaseError: Failed to make request to https://firebase-public.firebaseio.com/cli.json
+[info] 
+[info] i  Firebase optionally collects CLI and Emulator Suite usage and error reporting information to help improve our products. Data is collected in accordance with Google's privacy policy (https://policies.google.com/privacy) and is not used to identify you. 
+[info] 
+[info] i  To change your preferences at any time, run `firebase logout` and `firebase login` again. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=956885867&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...
+[debug] [2026-09-08T03:34:44.839Z] >>> [apiv2][query] POST https://accounts.google.com/o/oauth2/token [none]
+[debug] [2026-09-08T03:34:44.839Z] >>> [apiv2][body] POST https://accounts.google.com/o/oauth2/token [omitted]
+[debug] [2026-09-08T03:34:55.563Z] *** [apiv2] error from fetch(https://accounts.google.com/o/oauth2/token, {"headers":{},"method":"POST","body":{"type":"Buffer","data":[45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,49,57,98,57,57,54,53,99,48,48,50,55,49,50,102,100,50,101,100,57,51,100,55,50,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,99,111,100,101,34,13,10,13,10,52,47,48,65,84,115,77,90,113,67,73,113,98,87,87,81,65,77,110,52,72,80,101,117,106,48,78,110,90,49,68,57,111,69,103,88,68,95,75,50,56,77,114,122,75,121,74,71,114,117,68,111,73,74,75,103,82,88,102,117,55,50,81,89,120,100,97,112,76,84,102,114,81,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,49,57,98,57,57,54,53,99,48,48,50,55,49,50,102,100,50,101,100,57,51,100,55,50,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,99,108,105,101,110,116,95,105,100,34,13,10,13,10,53,54,51,53,56,52,51,51,53,56,54,57,45,102,103,114,104,103,109,100,52,55,98,113,110,101,107,105,106,53,105,56,98,53,112,114,48,51,104,111,56,52,57,101,54,46,97,112,112,115,46,103,111,111,103,108,101,117,115,101,114,99,111,110,116,101,110,116,46,99,111,109,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,49,57,98,57,57,54,53,99,48,48,50,55,49,50,102,100,50,101,100,57,51,100,55,50,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,99,108,105,101,110,116,95,115,101,99,114,101,116,34,13,10,13,10,106,57,105,86,90,102,83,56,107,107,67,69,70,85,80,97,65,101,74,86,48,115,65,105,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,49,57,98,57,57,54,53,99,48,48,50,55,49,50,102,100,50,101,100,57,51,100,55,50,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,114,101,100,105,114,101,99,116,95,117,114,105,34,13,10,13,10,104,116,116,112,58,47,47,108,111,99,97,108,104,111,115,116,58,57,48,48,53,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,49,57,98,57,57,54,53,99,48,48,50,55,49,50,102,100,50,101,100,57,51,100,55,50,13,10,67,111,110,116,101,110,116,45,68,105,115,112,111,115,105,116,105,111,110,58,32,102,111,114,109,45,100,97,116,97,59,32,110,97,109,101,61,34,103,114,97,110,116,95,116,121,112,101,34,13,10,13,10,97,117,116,104,111,114,105,122,97,116,105,111,110,95,99,111,100,101,13,10,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,49,57,98,57,57,54,53,99,48,48,50,55,49,50,102,100,50,101,100,57,51,100,55,50,45,45,13,10]}}): ConnectTimeoutError: Connect Timeout Error (attempted address: accounts.google.com:443, timeout: 10000ms)
+[debug] [2026-09-08T03:34:55.564Z] Token Fetch Error: FirebaseError: Failed to make request to https://accounts.google.com/o/oauth2/token
+    at RetryOperation._fn (C:\Users\Chakma\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:338:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[error] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-09-08T03:34:55.569Z] >>> [apiv2][query] POST https://auth.firebase.tools/attest [none]
+[debug] [2026-09-08T03:34:55.569Z] >>> [apiv2][body] POST https://auth.firebase.tools/attest {"session_id":"c7c6fe13-1e1b-4861-b571-de38d841f6ea"}
+[debug] [2026-09-08T03:34:56.980Z] <<< [apiv2][status] POST https://auth.firebase.tools/attest 200
+[debug] [2026-09-08T03:34:56.980Z] <<< [apiv2][body] POST https://auth.firebase.tools/attest {"token":"afqgI0N9tN7k7n56Ihj9oo1II7y2QZnXZTnC68bIOtE"}
+[info] 
+[info] To sign in to the Firebase CLI:
+[info] 
+[info] 1. Take note of your session ID:
+[info] 
+[info]    C7C6F
+[info] 
+[info] 2. Visit the URL below on any device and follow the instructions to get your code:
+[info] 
+[info]    https://auth.firebase.tools/login?code_challenge=gIYV8GLvzo11bLJYVAKd6Uy_5edRA2gmuz2NrwwsvNE&session=c7c6fe13-1e1b-4861-b571-de38d841f6ea&attest=afqgI0N9tN7k7n56Ihj9oo1II7y2QZnXZTnC68bIOtE
+[info] 
+[info] 3. Paste or enter the authorization code below once you have it:
+[info] 
+[debug] [2026-09-08T05:28:12.698Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (C:\Users\Chakma\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\@inquirer\core\dist\commonjs\lib\create-prompt.js:101:37)
+    at Interface.emit (node:events:509:28)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1327:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:284:20)
+    at ReadStream.emit (node:events:521:24)
+    at emitKeys (node:internal/readline/utils:371:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+    at ReadStream.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+[error] 
+[error] Error: An unexpected error has occurred.

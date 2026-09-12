@@ -6,16 +6,18 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser'); // import cookies-parser
 const port = process.env.PORT || 3000;
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
 const app = express()
+
 //middleware
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.SITE_DOMAIN,
     credentials:true
 })) // for conneting server and client
 app.use(cookieParser());
-const crypto = require('crypto');
-const { data } = require('react-router');
+
 
 // custom verfy jwt token httponlyCookies
 const verifyIdToken = (req, res, next) => {
@@ -42,6 +44,10 @@ const verifyIdToken = (req, res, next) => {
 // const { initializeApp, cert } = require('firebase-admin/app');
 // const { getAuth } = require('firebase-admin/auth');
 // const serviceAccount = require("./zap-delivery-315ca-firebase-adminsdk-fbsvc-5e32126750.json");
+// const serviceAccount = require("./firebase-admin-key.json");
+
+// const decoded = Buffer.from(process.env.FB_SERVICE_KEY, 'base64').toString('utf8')
+// const serviceAccount = JSON.parse(decoded);
 
 // initializeApp({
 //     credential: cert(serviceAccount),
@@ -91,19 +97,34 @@ const client = new MongoClient(uri, {
     }
 });
 
+// Global variables for collections
+let userCollection, ridersCollection, percelsCollection, paymentCollection, trackingCollection;
+
+async function initializeDatabase() {
+    try {
+        if (!userCollection) {
+            await client.connect();
+            const db = client.db('zaper');
+            userCollection = db.collection('users');
+            ridersCollection = db.collection('riders');
+            percelsCollection = db.collection('percels');
+            paymentCollection = db.collection('payments');
+            trackingCollection = db.collection('tracking');
+            console.log("✅ Database connected successfully");
+        }
+    } catch (error) {
+        console.error("❌ Database connection error:", error);
+        throw error;
+    }
+}
 
 async function run() {
     try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // Initialize database connection
+        await initializeDatabase();
 
-        // we will create api heree /
-        const db = client.db('zaper');
-        const userCollection = db.collection('users');
-        const ridersCollection = db.collection('riders');
-        const percelsCollection = db.collection('percels');
-        const paymentCollection = db.collection('payments');
-        const trackingCollection = db.collection('tracking');
+        // we will create api here
+        // Database collections are now globally available from initializeDatabase()
 
         // now make verfy admin route
 
@@ -151,15 +172,15 @@ async function run() {
             const logUser = req.body;
             const token = jwt.sign(
                 logUser,
-                process.env.jWT_SECRET,
+                process.env.JWT_SECRET,
                 {expiresIn:'1h'}
             )
+            const isProduction = process.env.NODE_ENV === 'production';
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: false,
-                sameSite:'lax'
+                secure: isProduction,
+                sameSite: isProduction ? 'none' : 'lax'
             })
-        // console.log(token)
         res.send({success:true})
             
         })
@@ -206,7 +227,7 @@ async function run() {
 
         // /user role update
         app.patch('/users/:id/role', verifyIdToken, verifyAdmin, async (req, res) => {
-            const id = req.params;
+            const id = req.params.id;
             const roleInfo = req.body;
             // console.log(roleInfo)
             const query = { _id: new ObjectId(id) };
@@ -309,7 +330,7 @@ async function run() {
         app.patch('/riders/:id',verifyIdToken, verifyAdmin, async (req, res) => {
             const status = req.body.status;
             // console.log(status);
-            const id = req.params
+            const id = req.params.id
             // console.log(id);
             const query ={_id: new ObjectId(id)}
             const update = {
@@ -337,7 +358,7 @@ async function run() {
         })
 
         app.delete('/riders/:id', async (req, res) => {
-            const id = req.params
+            const id = req.params.id
             const query = { _id: new ObjectId(id) };
             const result = await ridersCollection.deleteOne(query);
             res.send(result);
@@ -420,7 +441,7 @@ async function run() {
 
         app.patch('/percels/:id', async (req, res) => {
             const { riderId, riderEmail, riderName ,trackingId} = req.body;
-            const id = req.params;
+            const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const updatePercel = {
                 $set: {
@@ -448,7 +469,7 @@ async function run() {
         })
 
         app.delete('/percels/:id', async (req, res) => {
-            const id = req.params;
+            const id = req.params.id;
             console.log(id);
             const query = { _id: new ObjectId(id) }
             const result = await percelsCollection.deleteOne(query);
@@ -482,7 +503,7 @@ async function run() {
         
         // get percel pay 
         app.get('/percels/:id', async (req, res) => {
-            const id = req.params;
+            const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await percelsCollection.findOne(query);
             res.send(result)
@@ -669,8 +690,6 @@ async function run() {
     }
 }
 run().catch(console.dir);
-
-
 
 
 app.get('/', (req, res) => {
