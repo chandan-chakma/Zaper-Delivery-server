@@ -190,19 +190,21 @@ async function run() {
         // create jwt or post jwt token 
         app.post('/getToken',(req, res) => {
             const logUser = req.body;
+            console.log('📝 Creating token for:', logUser.email);
             const token = jwt.sign(
                 logUser,
                 process.env.JWT_SECRET,
                 {expiresIn:'1h'}
             )
+            console.log('✅ Token created:', token.substring(0, 20) + '...');
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: true,  // Must be true for cross-origin
-                sameSite: 'none',  // Allow cross-origin cookie transmission
+                secure: true,
+                sameSite: 'none',
                 path: '/',
-                maxAge: 3600000  // 1 hour
+                maxAge: 3600000
             })
-        // console.log(token)
+            console.log('🍪 Cookie set with token');
         res.send({success:true})
             
         })
