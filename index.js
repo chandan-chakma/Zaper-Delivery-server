@@ -197,8 +197,10 @@ async function run() {
             )
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: false,
-                sameSite:'lax'
+                secure: true,  // Must be true for cross-origin
+                sameSite: 'none',  // Allow cross-origin cookie transmission
+                path: '/',
+                maxAge: 3600000  // 1 hour
             })
         // console.log(token)
         res.send({success:true})
